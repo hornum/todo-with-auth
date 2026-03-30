@@ -18,7 +18,7 @@ async def add_task(task: CreateTodo, user_id: int) -> Task:
         )
         session.add(new_task)
         await session.commit()
-        session.refresh(new_task)
+        await session.refresh(new_task)
         return new_task
 
 async def get_all_tasks(user_id: int) -> List[Task]:
@@ -40,7 +40,7 @@ async def update_task_status(task_id: int, status: TodoStatusUpdate) -> Task:
         task = result.scalar_one_or_none()
         if task is None:
             return None
-        task.is_completed = status.is_done
+        task.is_completed = status.is_completed
         await session.commit()
         await session.refresh(task)
         return task
@@ -50,5 +50,4 @@ async def delete_task_by_id(task_id: int) -> None:
         stmt = select(Task).where(Task.id == task_id)
         result = await session.execute(stmt)
         task = result.scalar_one_or_none()
-        task.delete()
-        await session.commit()
+        await session.delete(task)

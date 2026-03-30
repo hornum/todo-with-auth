@@ -4,7 +4,6 @@ from datetime import timedelta, datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.testing.pickleable import User
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from typing import Annotated
@@ -85,4 +84,4 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
 
             return {"access_token": token, 'token_type': 'bearer'}
 
-    raise HTTPException(status_code=400, detail="Incorrect email or password")
+    raise HTTPException(status_code=400, detail="Incorrect username or password")

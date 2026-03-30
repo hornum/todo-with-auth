@@ -19,4 +19,4 @@ class CreateTodo(BaseModel):
     priority: int = Field(gt=0, lt=6)
 
 class TodoStatusUpdate(BaseModel):
-    is_done: bool
+    is_completed: bool
