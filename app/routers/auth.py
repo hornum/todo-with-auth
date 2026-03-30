@@ -1,8 +1,7 @@
 from datetime import timedelta, datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.sql.functions import user
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.testing.pickleable import User
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -10,22 +9,37 @@ from typing import Annotated
 
 from app.config import settings
 from app.database import async_session_maker
-from app.schemas import UserRegister
+from app.schemas import UserRegister, Token
 from app.models import User
 from app.security import get_password_hash, verify_password
-from jose import jwt
-
+from jose import jwt, JWTError
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 SECRET_KEY = settings.JWT_SECRET
 ALGORITHM = 'HS256'
 
+oauth2_bearer = OAuth2PasswordBearer(tokenUrl='auth/token')
+
 def create_access_token(username: str, user_id: int, expires_delta: timedelta):
     encode = {'sub': username, 'id': user_id}
     expire = datetime.now(timezone.utc) + expires_delta
     encode.update({'exp': expire})
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get('sub')
+        user_id: int = payload.get('id')
+        if username is None or user_id is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail='Invalid token')
+        return {'username': username, 'user_id': user_id}
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail='Invalid token')
+
 
 def get_db():
     db = async_session_maker()
@@ -55,7 +69,7 @@ async def register_user(user_data: UserRegister) -> None:
         session.add(new_user)
         await session.commit()
 
-@router.post("/token")
+@router.post("/token", response_model=Token)
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
                                  db: db_dependency):
     query = select(User).where(User.username == form_data.username)
@@ -67,6 +81,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
                 hashed_password=existing_user.hashed_password
         ):
             token = create_access_token(existing_user.username, existing_user.id, expires_delta=timedelta(minutes=15))
-            return {"token": token}
+
+            return {"access_token": token, 'token_type': 'bearer'}
 
     raise HTTPException(status_code=400, detail="Incorrect email or password")
