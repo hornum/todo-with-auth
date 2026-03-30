@@ -1,7 +1,9 @@
+from collections.abc import AsyncGenerator
 from datetime import timedelta, datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.testing.pickleable import User
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -41,12 +43,9 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
                             detail='Invalid token')
 
 
-def get_db():
-    db = async_session_maker()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session_maker() as session:
+        yield session
 
 
 db_dependency = Annotated[Session, Depends(get_db)]
@@ -63,7 +62,9 @@ async def register_user(user_data: UserRegister) -> None:
         hashed_password = get_password_hash(user_data.password)
         new_user = User(
             email=user_data.email,
-            hashed_password= hashed_password,
+            username=user_data.username,
+            hashed_password=hashed_password,
+            is_superuser=user_data.is_superuser,
             created_at=datetime.now(timezone.utc),
         )
         session.add(new_user)
