@@ -15,7 +15,7 @@ class Token(BaseModel):
 class CreateTodo(BaseModel):
     title: str = Field(max_length=200)
     description: Optional[str] = Field(max_length=300)
-    is_done: Optional[bool] = False
+    is_completed: Optional[bool] = False
     priority: int = Field(gt=0, lt=6)
 
 class TodoStatusUpdate(BaseModel):
