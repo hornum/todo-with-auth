@@ -1,5 +1,5 @@
-from typing import Optional
-from pydantic import BaseModel, EmailStr, Field
+import datetime
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 
 class UserRegister(BaseModel):
@@ -19,3 +19,13 @@ class CreateTodo(BaseModel):
 
 class TodoStatusUpdate(BaseModel):
     is_completed: bool
+
+class TaskResponse(BaseModel):
+    id: int
+    title: str
+    description: str | None = None
+    priority: int
+    is_completed: bool
+    created_at: datetime.datetime
+
+    model_config = ConfigDict(from_attributes=True)

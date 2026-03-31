@@ -27,6 +27,11 @@ def create_access_token(username: str, user_id: int, expires_delta: timedelta):
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid token",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get('sub')
@@ -36,8 +41,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
                                 detail='Invalid token')
         return {'username': username, 'user_id': user_id}
     except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail='Invalid token')
+        raise credentials_exception
 
 @router.post("/register")
 async def register_user(user_data: UserRegister, db: db_dependency) -> None:
