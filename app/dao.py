@@ -25,7 +25,7 @@ async def get_all_tasks(db: AsyncSession, user_id: int) -> List[Task]:
     result = await db.execute(stmt)
     return result.scalars().all()
 
-async def get_task_by_id(db: AsyncSession, task_id: int) -> Task:
+async def get_task_by_id(db: AsyncSession, task_id: int) -> Task | None:
     stmt = select(Task).where(Task.id == task_id)
     result = await db.execute(stmt)
     return result.scalar_one_or_none()

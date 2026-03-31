@@ -6,18 +6,13 @@ from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.service as service
-from app.database import async_session_maker
+from app.database import db_dependency
 from app.schemas import CreateTodo, TodoStatusUpdate
 from app.routers.auth import get_current_user
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_maker() as session:
-        yield session
-
 user_dependency = Annotated[dict, Depends(get_current_user)]
-db_dependency = Annotated[AsyncSession, Depends(get_db)]
 
 @router.get("/")
 async def get_all_tasks(db: db_dependency, current_user: user_dependency):
