@@ -34,8 +34,7 @@ async def update_task_status(db: AsyncSession, user_id: int, task_id: int, statu
     await db.refresh(task)
     return task
 
-async def delete_task_by_id(db: AsyncSession, user_id: int, task_id: int) -> HTTPException:
+async def delete_task_by_id(db: AsyncSession, user_id: int, task_id: int) -> None:
     task = await get_user_task_or_404(db, user_id, task_id)
     await db.delete(task)
     await db.commit()
-    return HTTPException(status_code=204, detail="Task deleted.")
