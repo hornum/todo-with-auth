@@ -47,7 +47,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
-db_dependency = Annotated[Session, Depends(get_db)]
+db_dependency = Annotated[AsyncSession, Depends(get_db)]
 
 @router.post("/register")
 async def register_user(user_data: UserRegister) -> None:
@@ -60,11 +60,11 @@ async def register_user(user_data: UserRegister) -> None:
 
         hashed_password = get_password_hash(user_data.password)
         new_user = User(
-            email=user_data.email,
-            username=user_data.username,
-            hashed_password=hashed_password,
-            is_superuser=user_data.is_superuser,
-            created_at=datetime.now(timezone.utc),
+            email = user_data.email,
+            username = user_data.username,
+            hashed_password = hashed_password,
+            is_superuser = False,
+            created_at = datetime.now(timezone.utc),
         )
         session.add(new_user)
         await session.commit()
