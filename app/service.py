@@ -1,42 +1,41 @@
 from typing import List
 
 from fastapi import HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.dao as dao
 from app.models import Task
-from app.schemas import CreateTodo
+from app.schemas import CreateTodo, TodoStatusUpdate
 
 
-async def create_task(user: dict, task: CreateTodo) -> Task:
-    if user is None:
-        raise HTTPException(status_code=401, detail="Authentication failed.")
-    return await dao.add_task(task, user.get('user_id'))
-
-async def get_all_tasks(user: dict) -> List[Task]:
-    if user is None:
-        raise HTTPException(status_code=401, detail="Authentication failed.")
-    return await dao.get_all_tasks(user.get('user_id'))
-
-async def get_task_by_id(user: dict, task_id: int) -> Task:
-    task = await dao.get_task_by_id(task_id)
+async def get_user_task_or_404(db: AsyncSession, user_id: int, task_id: int) -> Task:
+    task = await dao.get_task_by_id(db, task_id)
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found.")
-    if task.user_id != user.get('user_id'):
-        raise HTTPException(status_code=403, detail="Authentication failed.")
+    if task.user_id != user_id:
+        raise HTTPException(status_code=403, detail="Forbidden.")
+
     return task
 
-async def update_task_status(user, task_id, status) -> Task:
-    task = await dao.get_task_by_id(task_id)
-    if task is None:
-        raise HTTPException(status_code=404, detail="Task not found.")
-    if task.user_id != user.get('user_id'):
-        raise HTTPException(status_code=403, detail="Authentication failed.")
-    return await dao.update_task_status(task_id, status)
+async def create_task(db: AsyncSession, user_id: int, task: CreateTodo) -> Task:
+    return await dao.add_task(db, user_id, task)
 
-async def delete_task_by_id(user: dict, task_id: int) -> None:
-    task = await dao.get_task_by_id(task_id)
-    if task is None:
-        raise HTTPException(status_code=404, detail="Task not found.")
-    if task.user_id != user.get('user_id'):
-        raise HTTPException(status_code=403, detail="Authentication failed.")
-    return await dao.delete_task_by_id(task_id)
+async def get_all_tasks(db: AsyncSession, user_id: int) -> List[Task]:
+    return await dao.get_all_tasks(db, user_id)
+
+async def get_task_by_id(db: AsyncSession, user_id: int, task_id: int) -> Task:
+    task = await get_user_task_or_404(db, user_id, task_id)
+    return task
+
+async def update_task_status(db: AsyncSession, user_id: int, task_id: int, status: TodoStatusUpdate) -> Task:
+    task = await get_user_task_or_404(db, user_id, task_id)
+    task.is_completed = status.is_completed
+    await db.commit()
+    await db.refresh(task)
+    return task
+
+async def delete_task_by_id(db: AsyncSession, user_id: int, task_id: int) -> HTTPException:
+    task = await get_user_task_or_404(db, user_id, task_id)
+    await db.delete(task)
+    await db.commit()
+    return HTTPException(status_code=204, detail="Task deleted.")
