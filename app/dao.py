@@ -6,6 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Task, User
 from app.schemas import CreateTodo
 
+async def get_user_by_id(db: AsyncSession, user_id: int) -> User:
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
 
 async def add_task(db: AsyncSession, user_id: int, task: CreateTodo) -> Task:
     new_task = Task(
@@ -27,11 +31,6 @@ async def get_all_tasks_for_user(db: AsyncSession, user_id: int | None) -> List[
 
 async def get_task_by_id(db: AsyncSession, task_id: int) -> Task | None:
     stmt = select(Task).where(Task.id == task_id)
-    result = await db.execute(stmt)
-    return result.scalar_one_or_none()
-
-async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
-    stmt = select(User).where(User.id == user_id)
     result = await db.execute(stmt)
     return result.scalar_one_or_none()
 

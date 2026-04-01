@@ -29,3 +29,18 @@ class TaskResponse(BaseModel):
     created_at: datetime.datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+    username: str
+    is_active: bool
+    is_superuser: bool
+    created_at: datetime.datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+class ChangePassword(BaseModel):
+    password: str
+    new_password: str

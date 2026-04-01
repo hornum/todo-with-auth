@@ -20,7 +20,7 @@ async def get_todos(db: db_dependency, current_user: superuser_dependency):
 async def delete_todo(task_id: int, db: db_dependency, current_user: superuser_dependency):
     return await admin_service.admin_delete_task_by_id(db, task_id)
 
-@router.post("/{target_user_id}", response_model=TaskResponse, status_code=201)
+@router.post("/todos/{target_user_id}", response_model=TaskResponse, status_code=201)
 async def create_task(db: db_dependency, target_user_id, current_user: superuser_dependency, task: CreateTodo):
     return await admin_service.admin_create_task(db, target_user_id, task)
 

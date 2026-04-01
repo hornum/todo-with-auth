@@ -5,7 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.dao as dao
 from app.models import Task
-from app.schemas import CreateTodo, TodoStatusUpdate
+from app.schemas import CreateTodo, TodoStatusUpdate, UserResponse, ChangePassword
+from app.security import verify_password, get_password_hash
 
 
 async def get_user_task_or_404(db: AsyncSession, user_id: int, task_id: int) -> Task:
@@ -16,6 +17,9 @@ async def get_user_task_or_404(db: AsyncSession, user_id: int, task_id: int) -> 
         raise HTTPException(status_code=403, detail="Forbidden.")
 
     return task
+
+async def get_user(db: AsyncSession, user_id: int) -> UserResponse | None:
+    return await dao.get_user_by_id(db, user_id)
 
 async def create_task(db: AsyncSession, user_id: int, task: CreateTodo) -> Task:
     return await dao.add_task(db, user_id, task)
@@ -38,3 +42,11 @@ async def delete_task_by_id(db: AsyncSession, user_id: int, task_id: int) -> Non
     task = await get_user_task_or_404(db, user_id, task_id)
     await db.delete(task)
     await db.commit()
+
+async def change_password(db: AsyncSession, user_id: int, pass_verify: ChangePassword) -> None:
+    user = await dao.get_user_by_id(db, user_id)
+    if not verify_password(pass_verify.password, user.hashed_password):
+        raise HTTPException(status_code=403, detail="Incorrect password")
+    user.hashed_password = get_password_hash(pass_verify.new_password)
+    await db.commit()
+    await db.refresh(user)
