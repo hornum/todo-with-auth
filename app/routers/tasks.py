@@ -1,9 +1,5 @@
-from collections.abc import AsyncGenerator
-
 from fastapi import APIRouter, Depends, status
 from typing import Annotated
-
-from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.service as service
 from app.database import db_dependency

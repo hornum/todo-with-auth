@@ -21,7 +21,7 @@ async def create_task(db: AsyncSession, user_id: int, task: CreateTodo) -> Task:
     return await dao.add_task(db, user_id, task)
 
 async def get_all_tasks(db: AsyncSession, user_id: int) -> List[Task]:
-    return await dao.get_all_tasks(db, user_id)
+    return await dao.get_all_tasks_for_user(db, user_id)
 
 async def get_task_by_id(db: AsyncSession, user_id: int, task_id: int) -> Task:
     task = await get_user_task_or_404(db, user_id, task_id)

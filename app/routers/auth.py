@@ -20,8 +20,8 @@ ALGORITHM = 'HS256'
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl='auth/token')
 
-def create_access_token(username: str, user_id: int, expires_delta: timedelta):
-    encode = {'sub': username, 'id': user_id}
+def create_access_token(username: str, user_id: int, is_superuser: bool, expires_delta: timedelta):
+    encode = {'sub': username, 'id': user_id, 'is_superuser': is_superuser}
     expire = datetime.now(timezone.utc) + expires_delta
     encode.update({'exp': expire})
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -36,12 +36,18 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get('sub')
         user_id: int = payload.get('id')
+        is_superuser: bool = payload.get('is_superuser')
         if username is None or user_id is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail='Invalid token')
-        return {'username': username, 'user_id': user_id}
+        return {'username': username, 'user_id': user_id, 'is_superuser': is_superuser}
     except JWTError:
         raise credentials_exception
+
+async def get_current_superuser(current_user: Annotated[dict, Depends(get_current_user)]):
+    if not current_user.get("is_superuser"):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Only for superusers")
+    return current_user
 
 @router.post("/register")
 async def register_user(user_data: UserRegister, db: db_dependency) -> None:
@@ -72,7 +78,12 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
                 plain_password=form_data.password,
                 hashed_password=existing_user.hashed_password
         ):
-            token = create_access_token(existing_user.username, existing_user.id, expires_delta=timedelta(minutes=15))
+            token = create_access_token(
+                existing_user.username,
+                existing_user.id,
+                existing_user.is_superuser,
+                expires_delta=timedelta(minutes=15)
+            )
 
             return {"access_token": token, 'token_type': 'bearer'}
 
