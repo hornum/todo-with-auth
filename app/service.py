@@ -4,8 +4,8 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.dao as dao
-from app.models import Task
-from app.schemas import CreateTodo, TodoStatusUpdate, UserResponse, ChangePassword
+from app.models import Task, User
+from app.schemas import CreateTodo, TodoStatusUpdate, ChangePassword
 from app.security import verify_password, get_password_hash
 
 
@@ -18,8 +18,11 @@ async def get_user_task_or_404(db: AsyncSession, user_id: int, task_id: int) -> 
 
     return task
 
-async def get_user(db: AsyncSession, user_id: int) -> UserResponse | None:
-    return await dao.get_user_by_id(db, user_id)
+async def get_user(db: AsyncSession, user_id: int) -> User | None:
+    user = await dao.get_user_by_id(db, user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 async def create_task(db: AsyncSession, user_id: int, task: CreateTodo) -> Task:
     return await dao.add_task(db, user_id, task)
