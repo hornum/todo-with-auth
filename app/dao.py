@@ -3,6 +3,7 @@ from typing import List
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app import admin_service
 from app.models import Task, User
 from app.schemas import CreateTodo
 
@@ -38,3 +39,9 @@ async def get_all_tasks(db: AsyncSession) -> List[Task]:
     stmt = select(Task)
     result = await db.execute(stmt)
     return result.scalars().all()
+
+async def change_role_by_id(db: AsyncSession, user: User, is_superuser: bool) -> User:
+    user.is_superuser = is_superuser
+    await db.commit()
+    await db.refresh(user)
+    return user

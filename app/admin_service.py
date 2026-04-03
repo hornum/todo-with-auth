@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.dao as dao
-from app.models import Task
+from app.models import Task, User
 from app.schemas import CreateTodo
 
 
@@ -20,3 +20,9 @@ async def admin_delete_task_by_id(db: AsyncSession, task_id: int) -> None:
 
 async def admin_create_task(db: AsyncSession, target_user_id: int, task: CreateTodo) -> Task:
     return await dao.add_task(db, target_user_id, task)
+
+async def change_role_by_id(db: AsyncSession, user_id: int, is_superuser: bool) -> User:
+    user = await dao.get_user_by_id(db, user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return await dao.change_role_by_id(db, user, is_superuser)
