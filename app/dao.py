@@ -1,6 +1,6 @@
 from typing import List
 
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import admin_service
@@ -39,6 +39,11 @@ async def get_all_tasks(db: AsyncSession) -> List[Task]:
     stmt = select(Task)
     result = await db.execute(stmt)
     return result.scalars().all()
+
+async def delete_all_user_tasks(db: AsyncSession, user_id: int) -> None:
+    stmt = delete(Task).where(Task.user_id == user_id)
+    await db.execute(stmt)
+    await db.commit()
 
 async def change_role_by_id(db: AsyncSession, user: User, is_superuser: bool) -> User:
     user.is_superuser = is_superuser

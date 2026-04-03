@@ -46,6 +46,9 @@ async def delete_task_by_id(db: AsyncSession, user_id: int, task_id: int) -> Non
     await db.delete(task)
     await db.commit()
 
+async def delete_all_user_tasks(db: AsyncSession, user_id: int) -> None:
+    return await dao.delete_all_user_tasks(db, user_id)
+
 async def change_password(db: AsyncSession, user_id: int, pass_verify: ChangePassword) -> None:
     user = await dao.get_user_by_id(db, user_id)
     if not verify_password(pass_verify.password, user.hashed_password):

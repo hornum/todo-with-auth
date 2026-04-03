@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, status
 from typing import Annotated
 
+from sqlalchemy.util import await_only
+
 import app.service as service
 from app.database import db_dependency
 from app.schemas import CreateTodo, TodoStatusUpdate, TaskResponse
@@ -25,6 +27,10 @@ async def create_task(db: db_dependency, current_user: user_dependency, task: Cr
 @router.patch("/{task_id}/status", response_model=TaskResponse)
 async def update_task(db: db_dependency, current_user: user_dependency, task_id: int, status: TodoStatusUpdate):
     return await service.update_task_status(db, current_user.get("user_id"), task_id, status)
+
+@router.delete("/all", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_all_tasks(db: db_dependency, current_user: user_dependency):
+    return await service.delete_all_user_tasks(db, current_user.get("user_id"))
 
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_task(db: db_dependency, current_user: user_dependency, task_id: int):
