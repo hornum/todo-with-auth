@@ -1,8 +1,6 @@
 from fastapi import APIRouter, Depends, status
 from typing import Annotated
 
-from sqlalchemy.util import await_only
-
 import app.service as service
 from app.database import db_dependency
 from app.schemas import CreateTodo, TodoStatusUpdate, TaskResponse

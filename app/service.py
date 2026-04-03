@@ -18,7 +18,7 @@ async def get_user_task_or_404(db: AsyncSession, user_id: int, task_id: int) -> 
 
     return task
 
-async def get_user(db: AsyncSession, user_id: int) -> User | None:
+async def get_user(db: AsyncSession, user_id: int) -> User:
     user = await dao.get_user_by_id(db, user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")

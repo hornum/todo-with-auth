@@ -3,7 +3,7 @@ from typing import Annotated
 
 import app.service as service
 from app.database import db_dependency
-from app.schemas import CreateTodo, TodoStatusUpdate, TaskResponse, UserResponse, ChangePassword
+from app.schemas import UserResponse, ChangePassword
 from app.routers.auth import get_current_user
 
 

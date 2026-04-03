@@ -7,7 +7,7 @@ from app import admin_service
 from app.models import Task, User
 from app.schemas import CreateTodo
 
-async def get_user_by_id(db: AsyncSession, user_id: int) -> User:
+async def get_user_by_id(db: AsyncSession, user_id: int) -> User| None:
     stmt = select(User).where(User.id == user_id)
     result = await db.execute(stmt)
     return result.scalar_one_or_none()

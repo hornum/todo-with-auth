@@ -38,8 +38,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
         user_id: int = payload.get('id')
         is_superuser: bool = payload.get('is_superuser')
         if username is None or user_id is None:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                detail='Invalid token')
+            raise credentials_exception
         return {'username': username, 'user_id': user_id, 'is_superuser': is_superuser}
     except JWTError:
         raise credentials_exception

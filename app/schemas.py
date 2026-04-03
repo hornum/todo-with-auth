@@ -41,7 +41,6 @@ class UserResponse(BaseModel):
 class AdminUserResponse(BaseModel):
     id: int
     username: str
-    hashed_password: str
     email: str
     is_active: bool
     is_superuser: bool
