@@ -34,7 +34,15 @@ class UserResponse(BaseModel):
     id: int
     username: str
     email: str
+    created_at: datetime.datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+class AdminUserResponse(BaseModel):
+    id: int
     username: str
+    hashed_password: str
+    email: str
     is_active: bool
     is_superuser: bool
     created_at: datetime.datetime
