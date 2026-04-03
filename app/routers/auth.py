@@ -2,7 +2,7 @@ from datetime import timedelta, datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from typing import Annotated
 
 from app.config import settings
@@ -51,11 +51,16 @@ async def get_current_superuser(current_user: Annotated[dict, Depends(get_curren
 
 @router.post("/register")
 async def register_user(user_data: UserRegister, db: db_dependency) -> None:
-    query = select(User).where(User.email == user_data.email)
+    query = select(User).where(
+        or_(
+            User.email == user_data.email,
+            User.username == user_data.username
+        )
+    )
     result = await db.execute(query)
     existing_user = result.scalar_one_or_none()
     if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="User already exists")
     hashed_password = get_password_hash(user_data.password)
     new_user = User(
         email = user_data.email,
