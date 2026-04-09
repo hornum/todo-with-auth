@@ -1,5 +1,3 @@
-from typing import List
-
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -27,7 +25,7 @@ async def get_user(db: AsyncSession, user_id: int) -> User:
 async def create_task(db: AsyncSession, user_id: int, task: TaskCreate) -> Task:
     return await dao.add_task(db, user_id, task)
 
-async def get_all_tasks(db: AsyncSession, user_id: int) -> List[Task]:
+async def get_all_tasks(db: AsyncSession, user_id: int) -> list[Task]:
     return await dao.get_all_tasks_for_user(db, user_id)
 
 async def get_task_by_id(db: AsyncSession, user_id: int, task_id: int) -> Task:
@@ -49,14 +47,12 @@ async def delete_task_by_id(db: AsyncSession, user_id: int, task_id: int) -> Non
 async def delete_all_user_tasks(db: AsyncSession, user_id: int) -> None:
     return await dao.delete_all_user_tasks(db, user_id)
 
-async def change_password(db: AsyncSession, user_id: int, pass_verify: ChangePassword) -> None:
-    user = await dao.get_user_by_id(db, user_id)
-    if not verify_password(pass_verify.password, user.hashed_password):
 async def change_password(db: AsyncSession, user_id: int, password_change: PasswordChange) -> None:
     user = await get_user(db, user_id)
     if not verify_password(password_change.password, user.hashed_password):
         raise HTTPException(status_code=403, detail="Incorrect password")
-    user.hashed_password = get_password_hash(pass_verify.new_password)
+    if password_change.password == password_change.new_password:
+        raise HTTPException(status_code=400, detail="New password must differ from current password")
     user.hashed_password = get_password_hash(password_change.new_password)
     await db.commit()
     await db.refresh(user)
