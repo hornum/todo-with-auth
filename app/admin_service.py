@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.dao as dao
 from app.models import Task, User
-from app.schemas import CreateTodo
+from app.schemas import TaskCreate
 
 
 async def admin_get_all_tasks(db: AsyncSession) -> List[Task]:
@@ -19,6 +19,7 @@ async def admin_delete_task_by_id(db: AsyncSession, task_id: int) -> None:
     await db.commit()
 
 async def admin_create_task(db: AsyncSession, target_user_id: int, task: CreateTodo) -> Task:
+async def admin_create_task(db: AsyncSession, target_user_id: int, task: TaskCreate) -> Task:
     return await dao.add_task(db, target_user_id, task)
 
 async def change_role_by_id(db: AsyncSession, user_id: int, is_superuser: bool) -> User:

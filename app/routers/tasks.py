@@ -5,6 +5,7 @@ import app.service as service
 from app.database import db_dependency
 from app.schemas import CreateTodo, TodoStatusUpdate, TaskResponse
 from app.routers.auth import get_current_user
+from app.schemas import TaskCreate, TaskResponse, TaskStatusUpdate
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
@@ -21,10 +22,12 @@ async def get_task_by_id(db: db_dependency, current_user: user_dependency, task_
 @router.post("/", response_model=TaskResponse, status_code=201)
 async def create_task(db: db_dependency, current_user: user_dependency, task: CreateTodo):
     return await service.create_task(db, current_user.get("user_id"), task)
+async def create_task(db: db_dependency, current_user: user_dependency, task: TaskCreate):
 
 @router.patch("/{task_id}/status", response_model=TaskResponse)
 async def update_task(db: db_dependency, current_user: user_dependency, task_id: int, status: TodoStatusUpdate):
     return await service.update_task_status(db, current_user.get("user_id"), task_id, status)
+async def update_task(db: db_dependency, current_user: user_dependency, task_id: int, status: TaskStatusUpdate):
 
 @router.delete("/all", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_all_tasks(db: db_dependency, current_user: user_dependency):

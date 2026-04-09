@@ -50,6 +50,7 @@ async def get_current_superuser(current_user: Annotated[dict, Depends(get_curren
 
 @router.post("/register")
 async def register_user(user_data: UserRegister, db: db_dependency) -> None:
+async def register_user(user_data: UserCreate, db: db_dependency) -> None:
     query = select(User).where(
         or_(
             User.email == user_data.email,

@@ -5,6 +5,7 @@ import app.service as service
 from app.database import db_dependency
 from app.schemas import UserResponse, ChangePassword
 from app.routers.auth import get_current_user
+from app.schemas import PasswordChange, UserResponse
 
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -19,3 +20,4 @@ async def get_user(db: db_dependency, user: user_dependency):
 @router.post("/password", status_code=status.HTTP_204_NO_CONTENT)
 async def change_password(db: db_dependency, user: user_dependency, password_verify: ChangePassword):
     return await service.change_password(db, user.get("user_id"), password_verify)
+async def change_password(db: db_dependency, user: user_dependency, password_verify: PasswordChange):

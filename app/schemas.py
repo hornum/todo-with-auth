@@ -2,7 +2,7 @@ import datetime
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 
-class UserRegister(BaseModel):
+class UserCreate(BaseModel):
     email: EmailStr
     username: str
     password: str
@@ -11,13 +11,13 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
-class CreateTodo(BaseModel):
+class TaskCreate(BaseModel):
     title: str = Field(max_length=200)
     description: str | None = Field(default=None, max_length=200)
     is_completed: bool = False
     priority: int = Field(gt=0, lt=6)
 
-class TodoStatusUpdate(BaseModel):
+class TaskStatusUpdate(BaseModel):
     is_completed: bool
 
 class TaskResponse(BaseModel):
@@ -51,3 +51,4 @@ class AdminUserResponse(BaseModel):
 class ChangePassword(BaseModel):
     password: str
     new_password: str
+class PasswordChange(BaseModel):
