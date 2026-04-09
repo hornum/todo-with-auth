@@ -4,8 +4,8 @@ from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 class UserCreate(BaseModel):
     email: EmailStr
-    username: str
-    password: str
+    username: str = Field(min_length=3, max_length=100)
+    password: str = Field(min_length=8)
 
 class Token(BaseModel):
     access_token: str
@@ -48,7 +48,6 @@ class AdminUserResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-class ChangePassword(BaseModel):
-    password: str
-    new_password: str
 class PasswordChange(BaseModel):
+    password: str = Field(min_length=8)
+    new_password: str = Field(min_length=8)
