@@ -8,7 +8,7 @@ from app.schemas import TaskResponse, TaskCreate, AdminUserResponse
 router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(get_current_superuser)])
 
 
-@router.get("/todos", status_code=status.HTTP_200_OK)
+@router.get("/todos", status_code=status.HTTP_200_OK, response_model=list[TaskResponse])
 async def get_todos(db: db_dependency):
     return await admin_service.admin_get_all_tasks(db)
 
